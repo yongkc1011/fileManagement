@@ -1,7 +1,13 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const RAW = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
+
+const API_BASE = RAW.startsWith("http") ? RAW : `https://${RAW}`;
+
+
+const API_BASE_CLEAN = API_BASE.replace(/\/$/, "");
 
 async function request(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${API_BASE_CLEAN}${path}`, {
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
   });
@@ -17,10 +23,8 @@ async function request(path, options = {}) {
 
   if (res.status === 204) return null;
 
-
   const text = await res.text();
   if (!text) return null;
-
 
   return JSON.parse(text);
 }
@@ -33,4 +37,5 @@ export const NotesApi = {
     request(`/api/notes/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   remove: (id) => request(`/api/notes/${id}`, { method: "DELETE" }),
 };
+
 
